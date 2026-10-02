@@ -1,0 +1,22 @@
+# Credentials
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+.pytest_cache/
+.ruff_cache/
+# JavaScript
+node_modules/
+.next/
+dist/
+coverage/
+# Local
+.DS_Store
+.idea/
+*.log
+tmp/

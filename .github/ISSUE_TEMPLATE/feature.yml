@@ -1,0 +1,21 @@
+name: Feature
+description: Kabul kriterleriyle geliştirme işi
+title: "[Feature] "
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem ve hedef kullanıcı davranışı
+    validations:
+      required: true
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Kabul kriterleri
+      description: Gözlenebilir ve doğrulanabilir sonuçları yazın.
+    validations:
+      required: true
+  - type: textarea
+    id: dependencies
+    attributes:
+      label: Bağımlılıklar ve önerilen sorumlu

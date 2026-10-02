@@ -1,0 +1,21 @@
+name: Bug
+description: Tekrar üretilebilir hata
+title: "[Bug] "
+body:
+  - type: textarea
+    id: steps
+    attributes:
+      label: Tekrar üretme adımları
+    validations:
+      required: true
+  - type: textarea
+    id: behavior
+    attributes:
+      label: Beklenen ve gerçekleşen davranış
+    validations:
+      required: true
+  - type: textarea
+    id: environment
+    attributes:
+      label: Ortam ve temizlenmiş loglar
+      description: Token, özel kaynak kodu veya kişisel veri eklemeyin.
