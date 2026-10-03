@@ -1,8 +1,13 @@
 {
-  "kind": "analysis_result",
-  "contract_version": "1",
-  "id": "analysis-demo",
-  "status": "queued",
-  "questions": [],
-  "error": null
+  "version": "v1.0.0",
+  "event_type": "analysis.queued",
+  "timestamp": "2026-10-03T00:30:01Z",
+  "payload": {
+    "analysis_id": "an-789xyz",
+    "snapshot_id": "snap-a1b2c3d4",
+    "status": "QUEUED",
+    "estimated_seconds": 15,
+    "retry_after_ms": 3000,
+    "queue_position": 2
+  }
 }

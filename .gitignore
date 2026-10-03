@@ -1,22 +1,22 @@
-# Credentials
-.env
-.env.*
-!.env.example
-*.pem
-*.key
-# Python
+# Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
-.venv/
+*$py.class
+
+# Pytest cache
 .pytest_cache/
-.ruff_cache/
-# JavaScript
+
+# Local Environment Variables
+.env
+.env.local
+*.local
+
+# Node & Build artifacts
 node_modules/
-.next/
 dist/
-coverage/
-# Local
+out/
+*.vsix
+
+# OS generated files
 .DS_Store
-.idea/
-*.log
-tmp/
+Thumbs.db

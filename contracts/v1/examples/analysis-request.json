@@ -1,16 +1,41 @@
 {
-  "kind": "analysis_request",
-  "contract_version": "1",
-  "repository_id": "workspace-demo",
-  "base_commit_sha": "1111111111111111111111111111111111111111",
-  "snapshot_id": "704a4820b2feb9b82d5938cdea06a52db47bbd964a4373e25490937d09ed1a9b",
-  "scope": "unstaged",
-  "diff": "diff --git a/src/auth.py b/src/auth.py\n--- a/src/auth.py\n+++ b/src/auth.py\n@@ -0,0 +1,4 @@\n+def protected_endpoint(user):\n+    if user is None:\n+        raise PermissionError()\n+    return {'ok': True}\n",
-  "context": [
-    {
-      "path": "src/auth.py",
-      "content": "def protected_endpoint(user):\n    if user is None:\n        raise PermissionError()\n    return {'ok': True}\n"
+  "version": "v1.0.0",
+  "event_type": "analysis.request",
+  "timestamp": "2026-10-03T00:30:00Z",
+  "payload": {
+    "snapshot_id": "snap-a1b2c3d4",
+    "workspace_id": "ws-001",
+    "user_id": "usr-42",
+    "diff": {
+      "base_ref": "HEAD~1",
+      "files": [
+        {
+          "path": "src/auth/login.ts",
+          "change_type": "modified",
+          "hunks": [
+            {
+              "start_line": 12,
+              "end_line": 35,
+              "content": "@@ -12,8 +12,15 @@\n-  const token = getToken();\n+  const token = await refreshToken();\n+  if (!token) {\n+    throw new AuthError('Token refresh failed');\n+  }"
+            }
+          ]
+        },
+        {
+          "path": "src/auth/session.ts",
+          "change_type": "added",
+          "hunks": [
+            {
+              "start_line": 1,
+              "end_line": 28,
+              "content": "+ export class SessionManager { ... }"
+            }
+          ]
+        }
+      ]
+    },
+    "consent": {
+      "approved_at": "2026-10-03T00:29:55Z",
+      "scope": "staged_changes_only"
     }
-  ],
-  "pipeline_version": "pilot-1"
+  }
 }

@@ -1,0 +1,3 @@
+pytest>=8.0.0
+jsonschema[format]>=4.21.0
+psycopg2-binary>=2.9.9

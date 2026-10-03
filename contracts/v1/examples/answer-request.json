@@ -1,7 +1,12 @@
 {
-  "kind": "answer_request",
-  "contract_version": "1",
-  "question_id": "q-1",
-  "answer": "Yetkisiz kullanıcının başarılı yanıt almasını engellemek için.",
-  "submission_id": "submission-demo-1"
+  "version": "v1.0.0",
+  "event_type": "answer.request",
+  "timestamp": "2026-10-03T00:32:45Z",
+  "payload": {
+    "question_id": "q-001",
+    "analysis_id": "an-789xyz",
+    "user_id": "usr-42",
+    "answer_text": "If refreshToken is called from a non-async context without await, it returns a Promise that rejects, resulting in an unhandled promise rejection. To handle this, I would wrap the call in a try-catch block within an async IIFE, or attach a .catch() handler. Additionally, registering a global unhandledrejection event listener would serve as a safety net.",
+    "time_spent_seconds": 95
+  }
 }

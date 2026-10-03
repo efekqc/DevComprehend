@@ -1,0 +1,47 @@
+version: '3.9'
+
+services:
+  devcomprehend-db:
+    image: postgres:16-alpine
+    container_name: devcomprehend-postgres
+    restart: unless-stopped
+    ports:
+      - "${DB_PORT:-5433}:5432"
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-devcomprehend}
+      POSTGRES_USER: ${POSTGRES_USER:-dc_admin}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-dc_local_pass_2026}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ../db/migrations:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-dc_admin} -d ${POSTGRES_DB:-devcomprehend}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    networks:
+      - devcomprehend-net
+
+  devcomprehend-redis:
+    image: redis:7-alpine
+    container_name: devcomprehend-redis
+    restart: unless-stopped
+    ports:
+      - "${REDIS_PORT:-6380}:6379"
+    command: redis-server --maxmemory 64mb --maxmemory-policy allkeys-lru
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - devcomprehend-net
+
+volumes:
+  pgdata:
+    driver: local
+
+networks:
+  devcomprehend-net:
+    driver: bridge

@@ -1,0 +1,167 @@
+name: DevComprehend CI — Full Pipeline
+
+on:
+  push:
+    branches: [main, 'feat/**']
+    paths:
+      - 'contracts/**'
+      - 'infra/db/**'
+      - 'tests/**'
+      - 'scripts/**'
+      - '.github/workflows/ci.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'contracts/**'
+      - 'infra/db/**'
+      - 'tests/**'
+      - 'scripts/**'
+
+jobs:
+  # ─── Job 1: Contract Schema Validation ──────────────────────────────────────
+  contract-tests:
+    name: "📋 Contract Schema Tests"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Run contract schema tests
+        run: pytest tests/contract/ -v --tb=short
+
+  # ─── Job 2: Integration Tests (PostgreSQL) ─────────────────────────────────
+  integration-tests:
+    name: "🗄️ Integration Tests (DB)"
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB: devcomprehend_test
+          POSTGRES_USER: dc_admin
+          POSTGRES_PASSWORD: dc_test_pass
+        ports:
+          - 5433:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    env:
+      DATABASE_URL: postgresql://dc_admin:dc_test_pass@localhost:5433/devcomprehend_test
+      ENABLE_FAKE_LLM_PROVIDER: 'true'
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Wait for PostgreSQL
+        run: |
+          for i in $(seq 1 30); do
+            pg_isready -h localhost -p 5433 -U dc_admin && break
+            echo "Waiting for postgres... ($i/30)"
+            sleep 1
+          done
+
+      - name: Run integration tests
+        run: pytest tests/integration/ -v --tb=short
+
+      - name: Verify fake LLM provider
+        run: |
+          python -c "
+          from tests.mock_adapters.fake_llm_provider import FakeLLMProvider
+          p = FakeLLMProvider()
+          result = p.generate_analysis({'files': [{'path': 'test.ts', 'hunks': [{'start_line': 1, 'end_line': 10, 'content': 'test'}]}]})
+          assert result['status'] == 'READY'
+          assert len(result['questions']) == 1
+          print('✅ Fake LLM provider works correctly')
+          "
+
+  # ─── Job 3: E2E & Edge Case Tests ──────────────────────────────────────────
+  e2e-edge-cases:
+    name: "🔄 E2E & Edge Cases"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Run E2E pipeline tests
+        run: pytest tests/e2e/ -v --tb=short
+
+      - name: Run VSIX verifier dry-run
+        run: python scripts/verify_vsix_package.py --dry-run
+
+  # ─── Job 4: Security Audit ─────────────────────────────────────────────────
+  security-audit:
+    name: "🔒 Security Audit"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Run security tests
+        run: pytest tests/security/ -v --tb=short
+
+      - name: Verify secret masking
+        run: |
+          python -c "
+          from tests.mock_adapters.fake_llm_provider import FakeLLMProvider
+          p = FakeLLMProvider()
+          tests = [
+              ('API_KEY=sk-1234567890abcdefghijklmnop', 'OpenAI key'),
+              ('password=SuperSecretPass123!', 'password'),
+              ('-----BEGIN RSA PRIVATE KEY-----', 'RSA key'),
+              ('token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.test', 'JWT token'),
+          ]
+          for text, name in tests:
+              masked = p.mask_secrets(text)
+              assert '[REDACTED_SECRET]' in masked, f'Failed to mask {name}: {masked}'
+              print(f'✅ {name} masked correctly')
+          print('\n✅ All secret patterns verified')
+          "

@@ -1,15 +1,51 @@
 {
-  "kind": "evaluation_result",
-  "contract_version": "1",
-  "question_id": "q-1",
-  "assessment_state": "demonstrated",
-  "rubric_results": [
-    {
-      "criterion": "Yetkisiz isteğin reddedildiğini açıklamak",
-      "result": "met"
+  "version": "v1.0.0",
+  "event_type": "evaluation.result",
+  "timestamp": "2026-10-03T00:32:50Z",
+  "payload": {
+    "evaluation_id": "ev-555",
+    "question_id": "q-001",
+    "analysis_id": "an-789xyz",
+    "answer_id": "ans-101",
+    "score": 85.00,
+    "passed": true,
+    "feedback": "Excellent understanding of async error handling. You correctly identified the unhandled promise rejection scenario and proposed both local and global mitigation strategies.",
+    "rubric_breakdown": {
+      "correct": [
+        "Identified that an unawaited async call produces an unhandled rejection",
+        "Proposed .catch() and try-catch as local handlers",
+        "Mentioned global unhandledrejection listener"
+      ],
+      "missing": [
+        "Did not mention specific Node.js process.on('unhandledRejection') variant"
+      ],
+      "incorrect": []
+    },
+    "criteria_scores": [
+      {
+        "name": "identifies_promise_rejection",
+        "awarded": 30,
+        "max": 30
+      },
+      {
+        "name": "proposes_error_boundary",
+        "awarded": 40,
+        "max": 40
+      },
+      {
+        "name": "mentions_global_handler",
+        "awarded": 15,
+        "max": 30
+      }
+    ],
+    "fsrs": {
+      "concept_name": "async-error-handling",
+      "difficulty": 5.2,
+      "stability": 4.8,
+      "retrievability": 0.92,
+      "state": "Review",
+      "rating": 3,
+      "next_review_at": "2026-10-08T00:00:00Z"
     }
-  ],
-  "feedback": "Bu cevabın erişim kontrolü amacını açıklıyor. Bu değerlendirme tüm kimlik doğrulama bilgisini ölçmez.",
-  "uncertain": false,
-  "due_at": "2026-10-06T09:00:00Z"
+  }
 }

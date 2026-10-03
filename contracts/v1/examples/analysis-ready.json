@@ -1,58 +1,71 @@
 {
-  "kind": "analysis_result",
-  "contract_version": "1",
-  "id": "analysis-demo",
-  "status": "ready",
-  "error": null,
-  "questions": [
-    {
-      "id": "q-1",
-      "concept": "Erişim kontrolü",
-      "prompt": "user None olduğunda neden PermissionError üretiliyor?",
-      "sources": [
-        {
-          "path": "src/auth.py",
-          "start_line": 1,
-          "end_line": 4,
-          "snapshot_id": "704a4820b2feb9b82d5938cdea06a52db47bbd964a4373e25490937d09ed1a9b"
+  "version": "v1.0.0",
+  "event_type": "analysis.ready",
+  "timestamp": "2026-10-03T00:30:16Z",
+  "payload": {
+    "analysis_id": "an-789xyz",
+    "status": "READY",
+    "model_version": "gpt-4o-2025-08-06",
+    "prompt_version": "v1.2.0",
+    "questions": [
+      {
+        "question_id": "q-001",
+        "concept_name": "async-error-handling",
+        "file_path": "src/auth/login.ts",
+        "line_start": 12,
+        "line_end": 19,
+        "question_type": "situational",
+        "question_text": "The `refreshToken()` call is now awaited and its failure throws an `AuthError`. What would happen if this function is called from a non-async context, and how would you handle the resulting unhandled promise rejection?",
+        "rubric": {
+          "max_score": 100,
+          "criteria": [
+            {
+              "name": "identifies_promise_rejection",
+              "weight": 30,
+              "description": "Recognizes that calling an async function without await leads to an unhandled promise rejection"
+            },
+            {
+              "name": "proposes_error_boundary",
+              "weight": 40,
+              "description": "Suggests wrapping the call in try-catch or using .catch() handler"
+            },
+            {
+              "name": "mentions_global_handler",
+              "weight": 30,
+              "description": "Mentions process.on('unhandledRejection') or window.addEventListener('unhandledrejection')"
+            }
+          ]
         }
-      ],
-      "rubric": [
-        "Yetkisiz isteğin reddedildiğini açıklamak"
-      ]
-    },
-    {
-      "id": "q-2",
-      "concept": "Kontrol akışı",
-      "prompt": "Kontrol kaldırılırsa None kullanıcılı çağrı hangi sonuca ulaşır?",
-      "sources": [
-        {
-          "path": "src/auth.py",
-          "start_line": 1,
-          "end_line": 4,
-          "snapshot_id": "704a4820b2feb9b82d5938cdea06a52db47bbd964a4373e25490937d09ed1a9b"
+      },
+      {
+        "question_id": "q-002",
+        "concept_name": "session-management",
+        "file_path": "src/auth/session.ts",
+        "line_start": 1,
+        "line_end": 28,
+        "question_type": "open-ended",
+        "question_text": "You introduced a new `SessionManager` class. Explain the Single Responsibility Principle (SRP) trade-offs of having this class handle both session creation and session validation. Would you split it? Why or why not?",
+        "rubric": {
+          "max_score": 100,
+          "criteria": [
+            {
+              "name": "defines_srp",
+              "weight": 25,
+              "description": "Correctly defines SRP"
+            },
+            {
+              "name": "identifies_dual_responsibility",
+              "weight": 35,
+              "description": "Identifies that creation and validation are separate concerns"
+            },
+            {
+              "name": "argues_tradeoff",
+              "weight": 40,
+              "description": "Makes a reasoned argument for or against splitting, with justification"
+            }
+          ]
         }
-      ],
-      "rubric": [
-        "ok True sonucuna ulaşacağını açıklamak"
-      ]
-    },
-    {
-      "id": "q-3",
-      "concept": "Hata eşleme",
-      "prompt": "PermissionError HTTP katmanında eşlenmezse kullanıcı hangi davranışla karşılaşabilir?",
-      "sources": [
-        {
-          "path": "src/auth.py",
-          "start_line": 1,
-          "end_line": 4,
-          "snapshot_id": "704a4820b2feb9b82d5938cdea06a52db47bbd964a4373e25490937d09ed1a9b"
-        }
-      ],
-      "rubric": [
-        "HTTP davranışının bu parçada kesinleşmediğini belirtmek",
-        "Uygun hata eşlemesine ihtiyaç olduğunu açıklamak"
-      ]
-    }
-  ]
+      }
+    ]
+  }
 }
