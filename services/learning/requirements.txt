@@ -1,0 +1,2 @@
+# Same validator already used by the shared contract checks; no web framework.
+jsonschema==4.26.0

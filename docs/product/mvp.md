@@ -29,3 +29,25 @@ GitHub PR analizi, web portalı, ödeme, team dashboard, VS Code Marketplace yay
 
 ## Pilot
 10–20 gönüllü; oturum tamamlanması, 7 günlük tekrar kullanım, algılanan fayda ve yanlış değerlendirme oranı. Eşikler veri toplanmadan ekipçe kaydedilir.
+
+[Pilot protokolü](pilot-protocol.md) ölçüm tanımlarını, önerilen ön kayıt eşiklerini ve görüşme formunu içerir. [Pilot raporu](pilot-report.md) henüz veri toplanmadığını açıkça ayırır. Eşikler ekip onayı alınmış sonuçlar değildir.
+
+## Değerlendirme dili ve tekrar
+
+- **Değerlendirilmedi (unassessed):** Soru cevaplanmadı veya güvenilir değerlendirme üretilemedi. Düşük puan anlamına gelmez.
+- **Gelişiyor (developing):** Bu cevapta en az bir rubrik maddesi partial veya missing. Eksik/yanlış nokta ve sonraki adım açıklanır.
+- **Bu soruda gösterildi (demonstrated):** Bu sorunun tüm rubrik maddeleri karşılandı. Genel teknoloji yetkinliği iddiası değildir.
+- **Belirsiz (uncertain):** Cevap/kanıt yetersiz veya model işlemi başarısız. Kesin sonuç ve yeni tekrar tarihi oluşturulmaz; eski güvenilir geçmiş korunur.
+
+Pilot tekrar önerisi: missing varsa 1 gün, yalnız partial varsa 3 gün, tümü met ise 7 gün. Tarihler UTC saklanıp kullanıcının saat diliminde gösterilir. `due_at=null`, yeni tekrar planı yok demektir. Bu zaman aralıkları öğrenme etkisi kanıtlanmış sonuçlar değil, test edilecek başlangıç politikasıdır.
+
+## İlk dikey akışın somut kabulü
+
+1. Kullanıcı staged/unstaged seçer; önizleme iptalinde backend/model isteği oluşmaz.
+2. Gönderilen diff ve SHA-256 özeti eşleşir. Kaynak satırları onaylanan görüntüye bağlanır; base commit çalışma ağacı gibi sunulmaz.
+3. Sözleşme geçerli 3–5 farklı soru, 2–5 farklı kavram ve her soruda kanıt + beklenen cevap unsurlarını taşıyan rubrik oluşur.
+4. Doğru/kısmi/yanlış/belirsiz cevaplar farklı sonuçlar verir; provider/şema hatasında başarı veya düşük yetkinlik iddiası üretilmez.
+5. Cevap, değerlendirme ve due_at yalnız ilgili kullanıcının geçmişine kaydedilir. Belirsiz sonuç eski güvenilir kaydı silmez.
+6. Gerçek VSIX'te bu akış ve yeniden açılan geçmiş test edilir. Fake demo bu kabulün yerine geçmez.
+
+Öğrenme motorunun [yerel demo ve testleri](../../services/learning/README.md) mevcut; canlı model, API/DB ve VSIX kabulü ayrı doğrulanacaktır.
