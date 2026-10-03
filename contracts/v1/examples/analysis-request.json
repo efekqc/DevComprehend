@@ -1,0 +1,16 @@
+{
+  "kind": "analysis_request",
+  "contract_version": "1",
+  "repository_id": "workspace-demo",
+  "base_commit_sha": "1111111111111111111111111111111111111111",
+  "snapshot_id": "704a4820b2feb9b82d5938cdea06a52db47bbd964a4373e25490937d09ed1a9b",
+  "scope": "unstaged",
+  "diff": "diff --git a/src/auth.py b/src/auth.py\n--- a/src/auth.py\n+++ b/src/auth.py\n@@ -0,0 +1,4 @@\n+def protected_endpoint(user):\n+    if user is None:\n+        raise PermissionError()\n+    return {'ok': True}\n",
+  "context": [
+    {
+      "path": "src/auth.py",
+      "content": "def protected_endpoint(user):\n    if user is None:\n        raise PermissionError()\n    return {'ok': True}\n"
+    }
+  ],
+  "pipeline_version": "pilot-1"
+}

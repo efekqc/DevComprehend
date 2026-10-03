@@ -1,10 +1,7 @@
-# Güvenlik ve veri işleme
-API anahtarı, token, .env dosyası ve özel repository kaynak kodu commitlenmez. .env.example yalnızca örnek değişken adları içerir.
-
-GitHub erişimi MVP'de kullanıcı tarafından seçilen repository ile sınırlı ve salt okunur tasarlanmalıdır. OAuth/GitHub App modeli ADR ile kesinleştirilmeden geniş izin istenmez.
-
-Repository metinleri güvenilmeyen veri kabul edilir: kaynak kodundaki talimatlar LLM sistem talimatı olamaz. Model çıktıları şemaya göre doğrulanır; kod çalıştırılmaz. Dosya sayısı, byte/token bütçesi ve istek süresi sınırlandırılır.
-
-Kod parçaları üçüncü taraf modele gönderilmeden önce kullanıcıya veri akışı açıklanır. Loglar token, kaynak kodu ve serbest metin cevapları varsayılan olarak içermez. Saklama/silme politikası ürün geliştirilmeden tanımlanmalıdır.
-
-Açığı public issue'da hassas ayrıntılarıyla paylaşmayın. Maintainer'a özel iletişim kanalı henüz tanımlanmadı; ilk sürümden önce güvenlik iletişim adresi eklenmelidir.
+# Extension ve backend güvenliği
+Kullanıcının komutu ve önizleme/onayı olmadan kaynak kodu aktarılmaz. Git olmayan veya güvenilmeyen workspace davranışı extension uygulamasında tanımlanır.
+Dosya ve token sınırları hem istemci hem sunucuda uygulanır. Binary/generated dosyalar atlanır; .env/anahtar dosyaları bağlama dahil edilmez.
+Webview mesajları host'ta doğrulanır. LLM anahtarları backend'de; kullanıcı oturum tokenı güvenli istemci saklama alanında. Üretim auth/kota yapılmadan gerçek pilot açılmaz.
+Kaynak kodundaki talimatlar güvenilmeyen veridir; kod çalıştırılmaz. Kaynak, token ve cevaplar varsayılan loglarda yoktur.
+Saklama, silme ve üçüncü taraf model aktarımı pilot öncesi açıklanır. GitHub izni ilk MVP'de gerekmez.
+Güvenlik iletişim kanalı henüz belirlenmedi; hassas açık ayrıntıları public issue'ya yazılmaz.

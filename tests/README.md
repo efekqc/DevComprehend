@@ -1,4 +1,6 @@
-# Test stratejisi
-Birim testleri ilgili servis yanında; ortak entegrasyon ve uçtan uca testler burada.
-Öncelikler: kaynak referansı, diff sınırı, şema doğrulaması, kullanıcı izolasyonu, model hata yönetimi, rubrik davranışı ve tekrar planı.
-LLM kalite seti: açıkça doğru, kısmen doğru, yanlış ve belirsiz cevaplar. Deterministik testlerde mock sağlayıcı; canlı LLM kalite değerlendirmesi ayrı ve bütçeli çalıştırılır.
+# Kalite ve entegrasyon
+Sorumlu: Efe. Modül içi testler modül sahiplerinde kalır.
+Planlanan alanlar contract/, integration/, e2e/, fixtures/.
+İlk gün ortak fixture testleri; sonra extension → API → motor → DB.
+Kritik senaryolar: boş/büyük diff, Git olmayan workspace, stale snapshot, unauthorized analysis, invalid model JSON, quota, duplicate submission.
+Canlı LLM kalite seti deterministik CI'dan ayrı, bütçeli çalışır. VSIX kurulumu VS Code'da doğrulanır; Cursor ayrıca kontrol edilir.

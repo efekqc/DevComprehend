@@ -1,4 +1,6 @@
-# API
-Sorumlu önerisi: Derviş. Henüz çalışan API yok.
-Alanlar: kullanıcı oturumu, repository yetkisi, bounded diff, analiz yaşam döngüsü ve learning çağrısı.
-İlk iş DC-004. İstemciden gelen user_id yetki kanıtı sayılmaz; kullanıcı sunucu oturumundan belirlenir.
+# Backend API
+Sorumlu: Derviş. İlk gün fake learning adapter ve memory store ile başla.
+Planlanan alanlar: app/routes/, app/auth/, app/adapters/, app/domain/, tests/.
+contracts/v1/ tabanına göre POST /v1/analyses, GET /v1/analyses/{id}, POST /v1/analyses/{id}/answers.
+Kimlik, kota, idempotency ve sahibi doğrulaması backend'dedir. GitHub entegrasyonu ilk MVP koşulu değildir.
+Memory/fake mode geliştirme içindir; gerçek veri Efe'nin migrationlarıyla bağlanır.

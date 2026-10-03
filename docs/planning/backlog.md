@@ -1,14 +1,16 @@
-# Başlangıç backlog'u
-Bu tablo planlı işleri içerir; GitHub issue nesneleri henüz oluşturulmadı.
+# Extension-first backlog
+v2.0. Kimlikler plan kimliğidir; henüz GitHub issue numarası değildir.
 
-| ID | İş | Önerilen kişi | Bağımlılık | Kabul sonucu |
+| ID | İş | Sorumlu | İlk gün başlangıç | Entegrasyon kabulü |
 |---|---|---|---|---|
-| DC-001 | Kapsam ve pilot ölçütleri | Murathan | Yok | MVP ve pilot eşikleri ekipçe onaylı |
-| DC-002 | Stack, ortam ve veri sözleşmesi | Efe | DC-001 | ADR, sürümler, şema ve yerel komutlar |
-| DC-003 | Repo seçim ve soru ekranları | Ahmet | DC-002 | Mock veriyle boş/hata/başarılı akış |
-| DC-004 | GitHub erişimi ve bounded diff | Derviş | DC-002 | Yetkili repo, sabit SHA, boyut sınırı |
-| DC-005 | Kullanıcı ve analiz saklama | Efe | DC-002 | Migration ve kullanıcı izolasyonu |
-| DC-006 | Kavram, soru ve rubrik üretimi | Murathan | DC-004 | Kaynak kanıtlı, şema geçerli çıktı |
-| DC-007 | Cevap değerlendirme ve tekrar | Murathan + Derviş | DC-005, DC-006 | Rubrik, belirsizlik ve tekrar tarihi |
-| DC-008 | Entegrasyon ve maliyet kontrolleri | Efe | DC-003–007 | Uçtan uca akış ve token sınırı |
-| DC-009 | Pilot ve geri bildirim | Tüm ekip | DC-008 | Ölçüm raporu ve devam kararı |
+| DC-001 | Kapsam ve pilot | Murathan | Kullanıcı akışı, ölçüm | Ekipçe pilot eşikleri |
+| DC-002 | Sözleşme/DB ortamı | Efe | v1 fixture, schema kontrolü | Tüm tüketiciler uyumlu |
+| DC-003 | Extension/Git/sidebar | Ahmet | Mock API, fixture | Yerel diff → sidebar → cevap |
+| DC-004 | Analiz backend API | Derviş | Fake motor, memory store | Kimlik, quota, idempotency |
+| DC-005 | Kalıcı veri | Efe | Migration/seed | Sahiplik ve tekrar kaydı |
+| DC-006 | Kavram/soru/rubrik | Murathan | Fixture, fake provider | Şema geçerli kanıtlı çıktı |
+| DC-007 | Cevap/tekrar | Murathan + Derviş | Sabit soru/cevap fixture | Değerlendirme + kayıt |
+| DC-008 | E2E ve paket kontrolü | Efe; tüm ekip destek | Mock senaryolar | Extension → API → motor → DB |
+| DC-009 | Pilot ve karar | Tüm ekip | Görüşme/ölçüm taslağı | Ölçüm ve devam kararı |
+
+DC-003/004/006/002 **aynı anda başlar**. Gerçek bağlantı için ilgili çıktılar gerekir; ilk geliştirme için mock kullanılır.

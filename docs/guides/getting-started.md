@@ -3,13 +3,14 @@
 git clone https://github.com/Anonymbordo/DevComprehend.git
 cd DevComprehend
 git switch main
-git pull --ff-only
-git switch -c docs/DC-001-scope
+git pull --ff-only origin main
+git switch -c feat/DC-003-extension
 python3 scripts/check_repository.py
-git add docs/product/mvp.md
-git commit -m "docs(product): clarify MVP scope"
-git push -u origin docs/DC-001-scope
 ```
-Sonra GitHub üzerinde PR açın. Örnekteki dosyayı yalnızca gerçekten değiştirdiyseniz stage edin.
+Kişiye özel branch/alan için [paralel çalışma rehberi](../team/parallel-work.md).
 
-Şu an yalnızca Python 3 standart kütüphanesiyle repository kontrolü çalışır. Web/API geliştirme komutları henüz yoktur. Framework kurulumu DC-002 kararından sonra ayrı PR ile yapılır; ilgili servis README'sine kesin sürümler ve komutlar eklenir.
+Fixture doğrulaması için geliştirme ortamında jsonschema kurulu olmalıdır:
+```bash
+python3 scripts/check_contract_examples.py
+```
+Extension/API/motor henüz scaffold edilmedi. İlk PR'da paket yöneticisi, kesin sürüm, kurulum ve run/test komutlarını ilgili README'ye ekleyin. Mock akışla başlayın; gerçek kullanıcı kodu test fixture'ı olarak commitlenmez.

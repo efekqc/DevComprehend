@@ -1,27 +1,28 @@
-# Ekip ve çalışma alanları
-Aşağıdaki dağılım başlangıç önerisidir; ekip yetkinlikleri ve zamanına göre değiştirilebilir.
+# Extension-first görev dağılımı
+03.10.2026 · v2.0. Mevcut web-first görev dağılımının yerini alır.
 
-| Kişi | Birincil alan | Kod yolu | İlk iş | İnceleme ortağı |
-|---|---|---|---|---|
-| Murathan | Ürün koordinasyonu ve öğrenme motoru | services/learning/, docs/product/ | DC-001, DC-006 | Derviş |
-| Ahmet | Web arayüzü ve kullanıcı deneyimi | apps/web/ | DC-003 | Efe |
-| Derviş | API ve GitHub entegrasyonu | services/api/ | DC-004 | Murathan |
-| Efe | Veri modeli, kalite ve geliştirme ortamı | contracts/, infra/, tests/ | DC-002, DC-008 | Ahmet |
+| Kişi | Birincil sorumluluk | Sahip olduğu alan | İlk branch |
+|---|---|---|---|
+| Murathan | Ürün ve öğrenme motoru | services/learning/, docs/product/ | feat/DC-006-learning-engine |
+| Ahmet | VS Code extension, Git adapter, sidebar | apps/extension/ | feat/DC-003-extension |
+| Derviş | Backend ve kimlik/analiz API | services/api/ | feat/DC-004-analysis-api |
+| Efe | Sözleşme, DB, altyapı ve kalite | contracts/, infra/, tests/, .github/workflows/ | feat/DC-002-contracts-infra |
 
-## Kim nereye push yapacak?
-Herkes **aynı repository** içinde görev branch'ine push yapar. Örneğin Ahmet feat/DC-003-repo-selection branch'inde apps/web/ üzerinde çalışır. Derviş feat/DC-004-diff-ingestion branch'inde services/api/ üzerinde çalışır. Bunlar kişinin kalıcı branch'i değildir.
+Herkes ilk gün kod yazar. Ahmet fixture ile UI/host, Derviş fake learning adapter ile API, Murathan fixture ile motor, Efe şema/DB ve test altyapısıyla başlar. Gerçek entegrasyon bağımlılıkları geliştirmeye başlama engeli değildir.
 
-Bir alanın sorumlusu o alana tek katkı yapabilen kişi değildir; entegrasyon ve inceleme koordinasyonundan sorumludur. Ortak dosyalarda önce ilgili sorumluyla anlaşılır.
+## Ortak alanlar
+README/CONTRIBUTING ve docs/team/ değişikliklerini Murathan koordine eder. Sözleşmeyi Efe değiştirir; Ahmet, Derviş ve Murathan tüketici incelemesi yapar. Kök yapılandırma ve workflow değişikliklerinde Efe koordinasyonu gerekir. Sahiplik katkı yasağı değildir; çatışmayı önleyen koordinasyondur.
 
-## GitHub kimlikleri
-| Kişi | GitHub kullanıcı adı | Durum |
-|---|---|---|
-| Murathan | Anonymbordo | Repo sahibi hesabı; kişi eşleşmesi kullanıcıyla teyit edilmeli |
-| Ahmet | Bekleniyor | CODEOWNERS'a eklenmedi |
-| Derviş | Bekleniyor | CODEOWNERS'a eklenmedi |
-| Efe | Bekleniyor | CODEOWNERS'a eklenmedi |
+## İnceleme
+Ahmet ↔ Efe; Derviş ↔ Murathan. Entegrasyon PR'larında ilgili tüketici de inceler. Önce sözleşme, sonra adapter, sonra dikey akış birleştirilir.
 
-Daveti kabul etmeden issue ataması çalışmayabilir. Hiçbir hesap adı tahmin edilmez.
+## GitHub hesapları
+Repo sahibi @Anonymbordo doğrulanmıştır. Ahmet, Derviş ve Efe'nin kullanıcı adları bekleniyor. İsimler hesap adı değildir; path-specific CODEOWNERS ve kişi atamaları hesaplar doğrulanınca eklenir.
 
-## Haftalık koordinasyon
-Kısa toplantı: tamamlanan işler, blokajlar, sonraki teslim. Kararları docs/decisions/ altında ADR ile kaydedin. İşler için Todo → In progress → In review → Done akışı önerilir; GitHub Project henüz oluşturulmadı.
+[Push ve paralel çalışma rehberi](parallel-work.md)
+
+## Kişisel görev planları
+- [Murathan](tasks/murathan.md)
+- [Ahmet](tasks/ahmet.md)
+- [Derviş](tasks/dervis.md)
+- [Efe](tasks/efe.md)

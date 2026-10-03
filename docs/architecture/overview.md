@@ -1,31 +1,28 @@
-# Mimari
-## Önerilen yapı
-Tek repository içinde web uygulaması, API ve öğrenme modülü. learning ilk MVP'de API tarafından çağrılan Python paketi olabilir; ayrı servis zorunlu değildir.
-
+# Extension-first mimari
 ```mermaid
 flowchart TD
-  U["Web arayüzü"] --> A["API ve kullanıcı yetkisi"]
-  A --> G["GitHub diff ve kod bağlamı"]
-  G --> L["Öğrenme motoru"]
-  L --> M["LLM sağlayıcısı"]
-  M --> L
-  L --> D["Analiz ve cevap veritabanı"]
-  D --> A
-  A --> U
+  H["Extension host ve yerel Git"] --> W["Sidebar webview"]
+  W --> H
+  H --> A["API ve kimlik/kota"]
+  A --> L["Öğrenme motoru"]
+  L --> P["LLM sağlayıcısı"]
+  P --> L
+  A --> D["Veritabanı ve tekrar kayıtları"]
+  L --> A
+  A --> H
 ```
 
 ## Sınırlar
-- web: repository seçimi, sorular, cevaplar ve geri bildirim.
-- api: oturum, erişim kontrolü, GitHub istemcisi, işlem yaşam döngüsü.
-- learning: bağlam seçimi, kavram çıkarımı, soru ve rubrik, cevap değerlendirme.
-- contracts: ortak şemalar ve örnek payloadlar.
-- DB: kullanıcı, analiz, kavram, soru, cevap, değerlendirme, tekrar ve kullanım kaydı.
+Ahmet: host komutları, bounded Git adapter, onay/önizleme, webview ve API istemcisi.
+Derviş: backend kimlik, analiz/durum/cevap endpointleri, idempotency, kota ve motor adapter.
+Murathan: motor içi kavram, soru, rubrik, değerlendirme ve tekrar önerisi.
+Efe: sürümlü sözleşme, DB migration, CI ve entegrasyon fixture'ları.
 
-## İşlem yaşam döngüsü
-queued → fetching → generating → ready; başarısız adım failed olur. Yeniden deneme aynı kullanıcı + repository + commit SHA + pipeline sürümü için mükerrer ücretli işlem üretmemelidir.
+Webview dosya sistemi veya LLM anahtarına doğrudan erişmez. Mesaj türleri allowlist ve payload doğrulamasıyla host'ta ele alınır. Workspace trust, dosya sınırları, CSP ve SecretStorage gibi güvenlik detayları Ahmet'in uygulama PR'ında resmî API belgeleriyle doğrulanmalıdır.
 
-## Kanıt ve belirsizlik
-Git diff kodun AI tarafından yazıldığını güvenilir biçimde göstermez. AI/manüel satır oranı telemetry olmadan raporlanmaz. Mimari gerekçeler kod veya ADR kanıtıyla desteklenir; çıkarım ise açıkça belirtilir.
+## Veri
+Yerel diff base_commit_sha + snapshot_id (diff içeriğinin SHA-256 özeti) ile sabitlenir. Snapshot, HEAD commit'inden farklı değişiklik içerebilir; kanıt yerel snapshot'a aittir. Diff değişirse yeni analizdir. Kaynak konumu değişmişse uyarı verilir.
+Backend kullanıcı kimliğini oturumdan belirler; body'de user_id alınmaz. idempotency anahtarı kullanıcı + repository_id + snapshot_id + pipeline_version + sözleşme sürümüdür.
 
-## Bütçe
-Tüm repo her soruda modele gönderilmez. Dosya filtreleri, diff sınırı, bağlam seçimi ve token üst sınırı uygulanır. Sağlayıcı fiyatları ve modeller uygulama öncesi güncel resmî kaynaklardan doğrulanır; bu repo sabit maliyet taahhüdü içermez.
+## Mock ile paralellik
+Extension fixture'ı render eder; API fake motor çağırır; motor fake provider kullanır; DB migration ve CI bunlardan bağımsız ilerler. Ortak biçim contracts/v1/ altında.

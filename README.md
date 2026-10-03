@@ -1,49 +1,44 @@
 # DevComprehend
 **AI writes the code. You understand what it builds.**
 
-DevComprehend, geliştiricinin kendi repository değişikliklerinden öğrenmesini sağlayan bir AI Coding Comprehension Platform projesidir. Git diff ve ilgili kod bağlamından kavramlar çıkarır, projeye özel sorular sorar ve cevaplardan öğrenme geçmişi oluşturur.
+DevComprehend, yerel Git değişikliklerinden projeye özel sorular üreten bir **VS Code extension** projesidir. Extension kullanıcı arayüzüdür; backend model çağrılarını, değerlendirmeyi ve öğrenme geçmişini yönetir. Cursor uyumluluğu ayrıca doğrulanacaktır.
 
-> Durum: Proje başlangıç yapısı. Henüz çalışan ürün, GitHub OAuth entegrasyonu veya LLM servisi yoktur.
+> Durum: Plan ve başlangıç sözleşmeleri hazır; çalışan extension veya backend henüz yoktur. Önceki web-first MVP planı ADR-0002 ile değiştirilmiştir.
 
-## İlk sürüm
-1. İzin verilen repository ve commit/PR seçilir.
-2. Diff ve gerekli dosya parçaları alınır.
-3. Kaynak referanslarıyla 2–5 kavram çıkarılır.
-4. 3–5 bağlama özel soru üretilir.
-5. Kullanıcı kendi cümleleriyle cevaplar.
-6. Rubrik üzerinden geri bildirim ve tekrar planı oluşturulur.
+## MVP akışı
+Kullanıcı komutu → seçilen Git workspace ve diff → gönderilecek bağlamın önizlemesi/onayı → backend analizi → sidebar'da 3–5 soru → cevap ve rubrik geri bildirimi → tekrar planı.
 
-Puanlar yalnızca değerlendirilen cevaplara ait tahminlerdir. Commit sayısı, kod sahipliği veya teknoloji kullanımı yetkinlik kanıtı değildir. Test edilmeyen kavramlar **değerlendirilmedi** olarak gösterilir.
+İlk hedef yerel Git'tir; GitHub OAuth veya PR bağlantısı başlangıç için zorunlu değildir. Model API anahtarları backend'de kalır. Kullanıcının ChatGPT aboneliği bu uygulamanın API kullanım bütçesi sayılmaz.
 
-## Repository haritası
-| Yol | Sorumluluk |
-|---|---|
-| apps/web/ | Kullanıcı arayüzü |
-| services/api/ | API, yetkilendirme, GitHub entegrasyonu |
-| services/learning/ | Kavram çıkarımı, soru, değerlendirme ve tekrar |
-| contracts/ | Servisler arası veri sözleşmeleri |
-| infra/ | Yerel ortam ve dağıtım tanımları |
-| tests/ | Entegrasyon ve uçtan uca senaryolar |
-| docs/ | Kapsam, mimari, ekip ve teslim rehberleri |
-| scripts/ | Repository kontrolleri |
+## Dört kişi aynı anda başlar
+| Kişi | Alan | Başlangıç verisi |
+|---|---|---|
+| Ahmet | Extension host, Git adapter, sidebar | Ortak fixture, mock API |
+| Derviş | API, kimlik, analiz akışı | Mock learning adapter |
+| Murathan | Kavram, soru, rubrik, tekrar | Sentetik diff ve fake provider |
+| Efe | Sözleşme, DB, ortam, kalite | Fixture ve API/motor arayüzü |
 
-## Nereden başlamalı?
-- [Ekip ve görev alanları](docs/team/ownership.md)
-- [Kurulum ve ilk katkı](docs/guides/getting-started.md)
-- [Katkı ve PR kuralları](CONTRIBUTING.md)
-- [MVP kapsamı](docs/product/mvp.md)
+- [Görevler ve dosya sahipliği](docs/team/ownership.md)
+- [Paralel çalışma ve push rehberi](docs/team/parallel-work.md)
+- [MVP ve ürün modeli](docs/product/mvp.md)
 - [Mimari](docs/architecture/overview.md)
-- [İş listesi](docs/planning/backlog.md)
-- [Yol haritası](docs/planning/roadmap.md)
+- [Başlangıç sözleşmesi](contracts/README.md)
+- [Backlog](docs/planning/backlog.md)
+- [İlk katkı](docs/guides/getting-started.md)
 
-## Kontrol
+## Alanlar
+apps/extension/ · services/api/ · services/learning/ · contracts/ · infra/ · tests/
+
+apps/web/ gelecekteki yönetim/ödeme portalı için ayrılmıştır; ilk MVP işi değildir.
+
+## Kontroller
 ```bash
 python3 scripts/check_repository.py
+python3 scripts/check_contract_examples.py
 ```
-Bu kontrol repository yapısını ve yerel Markdown bağlantılarını doğrular; uygulama testi değildir.
+İkincisi geliştirme için jsonschema gerektirir. Uygulama kontrolleri gerçek kod eklendikçe tanımlanacaktır.
 
-## Ekip
-Murathan · Ahmet · Derviş · Efe. Görev dağılımı başlangıç önerisidir; GitHub kullanıcı adları doğrulanınca CODEOWNERS güncellenecektir.
+Puan yalnız değerlendirilen cevabın rubrik sonucudur. Test edilmeyen alan **değerlendirilmedi** olarak kalır. Git diff tek başına AI yazarlığını veya geliştirici yetkinliğini kanıtlamaz.
 
 ## Lisans
-Henüz açık kaynak lisansı seçilmedi. Repository'nin public olması kullanım lisansı verildiği anlamına gelmez.
+Henüz açık kaynak lisansı seçilmedi.

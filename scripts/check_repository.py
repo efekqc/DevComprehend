@@ -8,7 +8,7 @@ REQUIRED = (
     ".github/CODEOWNERS", ".github/workflows/repository-check.yml",
     "docs/product/mvp.md", "docs/team/ownership.md",
     "docs/architecture/overview.md", "docs/planning/backlog.md",
-    "apps/web/README.md", "services/api/README.md",
+    "apps/extension/README.md", "services/api/README.md",
     "services/learning/README.md", "contracts/README.md",
 )
 errors = []

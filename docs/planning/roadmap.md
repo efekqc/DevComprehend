@@ -1,12 +1,11 @@
-# Yol haritası
-Takvim ekip kapasitesi belirlenmeden taahhüt değildir; aşamalar tamamlanma kriteriyle ilerler.
+# Paralel teslim yolu
+Süre ekip kapasitesine bağlıdır. Aşağıdaki her dalga ortak kabul noktasıdır; sıralı kişi bekleme listesi değildir.
 
-| Aşama | Çıktı | Geçiş kriteri |
-|---|---|---|
-| 0 — Kararlar | Kapsam, stack, görevler ve sözleşme | DC-001/002 tamamlandı |
-| 1 — Dikey prototip | Sabit diff → soru → cevap → geri bildirim | Tek örnek uçtan uca çalışıyor |
-| 2 — GitHub ve veri | Yetkili repo analizi, kullanıcı izolasyonu | DC-004/005 tamamlandı |
-| 3 — Kalite | Şema, model hata yönetimi, bütçe, tekrar | DC-007/008 tamamlandı |
-| 4 — Pilot | Kullanıcı görüşmeleri ve ölçüm | Devam/daraltma kararı belgeli |
+| Dalga | Ahmet | Derviş | Murathan | Efe |
+|---|---|---|---|---|
+| 1 | Extension/sidebar + fixture | API + fake motor | Fake provider + soru/rubrik | Şema + DB/ortam |
+| 2 | Git diff + önizleme | Auth + analiz/durum | Gerçek provider + validasyon | Migration + adapter kontrolleri |
+| 3 | API + cevap/sonuç | Motor + kayıt/tekrar | Değerlendirme/kalite | E2E + quota/isolation |
+| 4 | VSIX + kullanılabilirlik | Hata/yeniden deneme | Pilot değerlendirme | Paket ve pilot kontrolü |
 
-Önce tek dikey akış teslim edilir. Dashboard ve entegrasyon sayısı pilot fayda sinyali görülmeden büyütülmez.
+Önce fixture dikey akışı, sonra gerçek yerel diff ve canlı model. Marketplace ve ödeme ayrı sonraki teslimdir.

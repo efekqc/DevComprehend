@@ -1,4 +1,5 @@
 # Öğrenme motoru
-Sorumlu önerisi: Murathan. Henüz model entegrasyonu yok.
-Alanlar: bağlam seçimi → kavram → soru/rubrik → cevap değerlendirme → tekrar.
-Prompts, rubrikler ve pipeline sürümleri kodla birlikte versiyonlanır. Fixture'lar sentetik veya açık lisanslı olmalıdır. Model yanıtları doğrulanmadan kaydedilmez.
+Sorumlu: Murathan. İlk gün sentetik request ve fake provider ile başla.
+Planlanan alanlar: src/learning/{concepts,questions,evaluation,repetition,providers}/, prompts/, tests/.
+API adapter sınırı: generate(request) → ready analysis; evaluate(question,answer) → evaluation.
+İlk sürüm API içi Python modülü olabilir. Efe'nin sözleşmesiyle şema doğrula. Fake provider geliştirmenin bağımsız başlangıcıdır; gerçek model kalitesini göstermez.

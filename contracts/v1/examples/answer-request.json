@@ -1,0 +1,7 @@
+{
+  "kind": "answer_request",
+  "contract_version": "1",
+  "question_id": "q-1",
+  "answer": "Yetkisiz kullanıcının başarılı yanıt almasını engellemek için.",
+  "submission_id": "submission-demo-1"
+}
