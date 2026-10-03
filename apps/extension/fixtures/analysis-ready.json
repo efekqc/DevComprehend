@@ -1,0 +1,58 @@
+{
+  "kind": "analysis_result",
+  "contract_version": "1",
+  "id": "analysis-demo",
+  "status": "ready",
+  "error": null,
+  "questions": [
+    {
+      "id": "q-1",
+      "concept": "Erişim kontrolü",
+      "prompt": "user None olduğunda neden PermissionError üretiliyor?",
+      "sources": [
+        {
+          "path": "src/auth.py",
+          "start_line": 1,
+          "end_line": 4,
+          "snapshot_id": "704a4820b2feb9b82d5938cdea06a52db47bbd964a4373e25490937d09ed1a9b"
+        }
+      ],
+      "rubric": [
+        "Yetkisiz isteğin reddedildiğini açıklamak"
+      ]
+    },
+    {
+      "id": "q-2",
+      "concept": "Kontrol akışı",
+      "prompt": "Kontrol kaldırılırsa None kullanıcılı çağrı hangi sonuca ulaşır?",
+      "sources": [
+        {
+          "path": "src/auth.py",
+          "start_line": 1,
+          "end_line": 4,
+          "snapshot_id": "704a4820b2feb9b82d5938cdea06a52db47bbd964a4373e25490937d09ed1a9b"
+        }
+      ],
+      "rubric": [
+        "ok True sonucuna ulaşacağını açıklamak"
+      ]
+    },
+    {
+      "id": "q-3",
+      "concept": "Hata eşleme",
+      "prompt": "PermissionError HTTP katmanında eşlenmezse kullanıcı hangi davranışla karşılaşabilir?",
+      "sources": [
+        {
+          "path": "src/auth.py",
+          "start_line": 1,
+          "end_line": 4,
+          "snapshot_id": "704a4820b2feb9b82d5938cdea06a52db47bbd964a4373e25490937d09ed1a9b"
+        }
+      ],
+      "rubric": [
+        "HTTP davranışının bu parçada kesinleşmediğini belirtmek",
+        "Uygun hata eşlemesine ihtiyaç olduğunu açıklamak"
+      ]
+    }
+  ]
+}

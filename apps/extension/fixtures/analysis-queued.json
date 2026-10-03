@@ -1,0 +1,8 @@
+{
+  "kind": "analysis_result",
+  "contract_version": "1",
+  "id": "analysis-demo",
+  "status": "queued",
+  "questions": [],
+  "error": null
+}

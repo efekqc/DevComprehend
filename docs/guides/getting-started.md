@@ -13,4 +13,4 @@ Fixture doğrulaması için geliştirme ortamında jsonschema kurulu olmalıdır
 ```bash
 python3 scripts/check_contract_examples.py
 ```
-Extension/API/motor henüz scaffold edilmedi. İlk PR'da paket yöneticisi, kesin sürüm, kurulum ve run/test komutlarını ilgili README'ye ekleyin. Mock akışla başlayın; gerçek kullanıcı kodu test fixture'ı olarak commitlenmez.
+Extension run/test/paket komutları [apps/extension/README.md](../../apps/extension/README.md) içindedir. API ve motor için ilk PR'da paket yöneticisi, kesin sürüm, kurulum ve run/test komutlarını ilgili README'ye ekleyin. Mock akışla başlayın; gerçek kullanıcı kodu test fixture'ı olarak commitlenmez.

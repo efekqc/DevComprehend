@@ -3,7 +3,7 @@
 
 DevComprehend, yerel Git değişikliklerinden projeye özel sorular üreten bir **VS Code extension** projesidir. Extension kullanıcı arayüzüdür; backend model çağrılarını, değerlendirmeyi ve öğrenme geçmişini yönetir. Cursor uyumluluğu ayrıca doğrulanacaktır.
 
-> Durum: Plan ve başlangıç sözleşmeleri hazır; çalışan extension veya backend henüz yoktur. Önceki web-first MVP planı ADR-0002 ile değiştirilmiştir.
+> Durum: Plan ve başlangıç sözleşmeleri hazır. Extension geliştirme iskeleti (mock mod, yerel Git önizlemesi, API istemcisi) [apps/extension/](apps/extension/README.md) altında; pilot doğrulaması ve Cursor testi yapılmadı. Önceki web-first MVP planı ADR-0002 ile değiştirilmiştir.
 
 ## MVP akışı
 Kullanıcı komutu → seçilen Git workspace ve diff → gönderilecek bağlamın önizlemesi/onayı → backend analizi → sidebar'da 3–5 soru → cevap ve rubrik geri bildirimi → tekrar planı.
@@ -36,7 +36,7 @@ apps/web/ gelecekteki yönetim/ödeme portalı için ayrılmıştır; ilk MVP i�
 python3 scripts/check_repository.py
 python3 scripts/check_contract_examples.py
 ```
-İkincisi geliştirme için jsonschema gerektirir. Uygulama kontrolleri gerçek kod eklendikçe tanımlanacaktır.
+İkincisi geliştirme için jsonschema gerektirir. Extension: `cd apps/extension && npm test`. Diğer uygulama kontrolleri modül README'lerindedir.
 
 Puan yalnız değerlendirilen cevabın rubrik sonucudur. Test edilmeyen alan **değerlendirilmedi** olarak kalır. Git diff tek başına AI yazarlığını veya geliştirici yetkinliğini kanıtlamaz.
 

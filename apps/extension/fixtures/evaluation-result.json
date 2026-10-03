@@ -1,0 +1,15 @@
+{
+  "kind": "evaluation_result",
+  "contract_version": "1",
+  "question_id": "q-1",
+  "assessment_state": "demonstrated",
+  "rubric_results": [
+    {
+      "criterion": "Yetkisiz isteğin reddedildiğini açıklamak",
+      "result": "met"
+    }
+  ],
+  "feedback": "Bu cevabın erişim kontrolü amacını açıklıyor. Bu değerlendirme tüm kimlik doğrulama bilgisini ölçmez.",
+  "uncertain": false,
+  "due_at": "2026-10-06T09:00:00Z"
+}

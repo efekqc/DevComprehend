@@ -1,0 +1,99 @@
+{
+  "name": "devcomprehend",
+  "displayName": "DevComprehend",
+  "description": "Yerel Git değişikliklerinden projeye özel anlama soruları (pilot).",
+  "version": "0.0.1",
+  "private": true,
+  "publisher": "devcomprehend-dev",
+  "license": "UNLICENSED",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Anonymbordo/DevComprehend.git"
+  },
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "categories": [
+    "Education",
+    "Other"
+  ],
+  "main": "./src/extension.js",
+  "capabilities": {
+    "untrustedWorkspaces": {
+      "supported": false,
+      "description": "DevComprehend yerel Git komutları çalıştırır; yalnız güvenilen workspace'lerde etkinleşir."
+    },
+    "virtualWorkspaces": false
+  },
+  "contributes": {
+    "commands": [
+      {
+        "command": "devcomprehend.analyzeChanges",
+        "title": "Analyze Changes",
+        "category": "DevComprehend"
+      },
+      {
+        "command": "devcomprehend.showMockDemo",
+        "title": "Show Mock Demo Questions",
+        "category": "DevComprehend"
+      },
+      {
+        "command": "devcomprehend.setApiToken",
+        "title": "Set API Token",
+        "category": "DevComprehend"
+      },
+      {
+        "command": "devcomprehend.clearApiToken",
+        "title": "Clear API Token",
+        "category": "DevComprehend"
+      }
+    ],
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "devcomprehend",
+          "title": "DevComprehend",
+          "icon": "media/icon.svg"
+        }
+      ]
+    },
+    "views": {
+      "devcomprehend": [
+        {
+          "type": "webview",
+          "id": "devcomprehend.sidebar",
+          "name": "Sorular"
+        }
+      ]
+    },
+    "configuration": {
+      "title": "DevComprehend",
+      "properties": {
+        "devcomprehend.apiMode": {
+          "type": "string",
+          "enum": [
+            "mock",
+            "http"
+          ],
+          "enumDescriptions": [
+            "Kod hiçbir yere gönderilmez; contracts/v1 örnek yanıtları gösterilir.",
+            "Onaylanan diff devcomprehend.apiBaseUrl adresine gönderilir."
+          ],
+          "default": "mock",
+          "description": "API adapter modu."
+        },
+        "devcomprehend.apiBaseUrl": {
+          "type": "string",
+          "default": "http://127.0.0.1:8000",
+          "description": "API adresi. Uzak adresler için https zorunludur; http yalnız localhost için kabul edilir."
+        }
+      }
+    }
+  },
+  "scripts": {
+    "sync-fixtures": "node scripts/sync-fixtures.js",
+    "test": "node --test \"tests/*.test.js\"",
+    "vscode:prepublish": "node scripts/sync-fixtures.js --check",
+    "package": "node -e \"require('fs').mkdirSync('dist',{recursive:true})\" && npx --yes @vscode/vsce@3 package --no-dependencies --skip-license --out dist/devcomprehend-dev.vsix"
+  }
+}
