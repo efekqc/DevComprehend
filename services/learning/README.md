@@ -58,13 +58,15 @@ Kimlik doğrulama, önizleme onayı, kullanıcı izolasyonu, `submission_id` ide
 | En az bir missing | developing | false | UTC şimdi + 1 gün |
 | Eksik madde yok, en az bir partial | developing | false | UTC şimdi + 3 gün |
 
-Boş string `answer` ortak şemaya göre geçersizdir; UI göndermemelidir. `unassessed + uncertain` düşük not değildir. Belirsizlikte rubrik sonuçları gösterilmez ve yeni tekrar planı üretilmez. Önceki güvenilir geçmiş/tekrar kaydını silmemek API'nin görevidir. Sonuç yalnız bu soruya aittir; global kavram ustalığına otomatik dönüştürülmez. Sıralama veya yüzde puan üretilmez. Tekrar politikası `repetition-1`, pilot hipotezidir.
+Boş string `answer` ortak şemaya göre geçersizdir; UI göndermemelidir. `unassessed + uncertain` düşük not değildir. Belirsizlikte rubrik sonuçları gösterilmez; motor belirsiz cevabı 1 gün sonra tekrar önerir, ancak API yalnız güvenilir sonuçların tekrar kaydını güncellemelidir. Önceki güvenilir geçmişi silmemek API'nin görevidir. Sonuç yalnız bu soruya aittir; global kavram ustalığına otomatik dönüştürülmez. Sıralama veya yüzde puan üretilmez. Tekrar politikası `repetition-2`, pilot hipotezidir.
 
 ## Hatalar ve bütçe
 
-Geçersiz istek, snapshot veya aşırı büyük girdi `LearningError` yükseltir. `error.as_dict()` güvenli `code/message/retryable` içerir. Üretimde sağlayıcı/çıktı hatası `failed analysis_result` döndürür; boş sorularla “ready” dönmez. Değerlendirmede sağlayıcı/çıktı hatası `uncertain` döndürür. Her çağrı en çok bir sağlayıcı isteği yapar, otomatik ücretli retry yoktur.
+Geçersiz istek, snapshot veya aşırı büyük girdi `LearningError` yükseltir. `error.as_dict()` güvenli `code/message/retryable` içerir. Üretimde sağlayıcı/çıktı hatası `failed analysis_result` döndürür; boş sorularla “ready” dönmez. Değerlendirmede sağlayıcı/çıktı hatası `uncertain` döndürür. Varsayılan olarak onarım kapalıdır; `max_repair_attempts=1` açılırsa yalnız kullanım bilgisi alınmış geçersiz model çıktısı için en fazla bir ek çağrı yapılır. İlk çağrı ve onarım aynı girdi/çıktı token bütçesini paylaşır; sağlayıcı hatası veya bilinmeyen kullanımda onarım denenmez. Bu, kota rezervasyonu değildir; API tarafı maliyet tavanını ayrıca uygular.
 
 Varsayılan limitler: request 48.000 UTF-8 byte, answer zarfı 8.000 byte, model JSON çıktısı 48.000 byte, 20 diff/bağlam dosyası, 32.000 input ve 4.000 output token. Girdi kapısı JSON + prompt + şemanın UTF-8 byte sayısı ve 1.024 envelope payıyla muhafazakâr tahmindir; tokenizer hesabı değildir. Sağlayıcının gerçek kullanım sayıları ayrıca kontrol edilir. Çıktı limitinin sonradan aşılmış olduğunun görülmesi oluşan ücreti geri almaz; API kota rezervasyonu gereklidir.
+
+Diff ayrıca en fazla 400 satır ve 16.000 karakter olabilir. `prune_git_diff` preview/onay öncesi lock/build dosyalarını tam dosya blokları halinde çıkarır; kalan diff sınırı aşarsa kesmek yerine reddeder. Backend aynı sınırları ve hariç tutulan yolları yeniden denetler; extension filtrelenen diff/context ile snapshot'ı yeniden üretmelidir.
 
 `on_usage=callback` ile pipeline/prompt sürümü, prompt hash'i, model sürümü, input/output token bilgisi ayrı kayda alınabilir; kaynak ve cevap içermez. Başarıyla alınmış provider response için, JSON doğrulamasından önce çağrılır. Callback hata verirse işlem durur; callback'i API tarafında güvenilir yapın. Ağ kesintisinde kullanım bilinmeyebilir; eksik kayıt sıfır maliyet sayılmaz. Fake kullanım sayıları sıfırdır, gerçek kullanım tahmini değildir.
 

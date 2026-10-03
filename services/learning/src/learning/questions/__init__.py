@@ -5,6 +5,15 @@ from ..contracts import QUESTION_SCHEMA, validate_provider
 from ..errors import LearningError
 
 
+def wire_questions(model_questions: list[dict]) -> list[dict]:
+    expected = ["architecture", "edge_case"] + ["implementation"] * (len(model_questions) - 2)
+    if [question["question_type"] for question in model_questions] != expected:
+        raise LearningError("INVALID_MODEL_OUTPUT", "Soru türü sırası ve dağılımı geçersiz.", True)
+    # Internal provider schema is versioned independently of the shared v1 wire schema.
+    return [{key: value for key, value in question.items() if key != "question_type"}
+            for question in model_questions]
+
+
 def validate_question(question: dict) -> None:
     validate_provider(question, QUESTION_SCHEMA)
     texts = [question["id"], question["concept"], question["prompt"], *question["rubric"]]

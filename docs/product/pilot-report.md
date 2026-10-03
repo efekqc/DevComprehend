@@ -18,6 +18,7 @@ Gerçek token kullanımı ve maliyet: ölçülmedi · Davet yöntemi ve örnek s
 | Uçtan uca tamamlama | — | Ölçülmedi | Tüm başlayanlar |
 | 7 günlük tekrar kullanım | — | Ölçülmedi | En az 168 saat gözlenenler |
 | Yanlış kesin değerlendirme | — | Ölçülmedi | İnsan incelemeli örnek sayısı |
+| Rubrik ölçütü düzeyinde insan uyumu | — | Ölçülmedi | ≥ %85 pilot kalite hedefi; uzlaştırılmış insan rubriği, uncertain hariç |
 | Yanlış demonstrated | — | Ölçülmedi | Aşırı güveni ayrıca say |
 | Belirsizlik | — | Ölçülmedi | Teknik hatalardan ayır |
 | Açıklama gelişimi | — | Ölçülmedi | Önce/sonra çifti olanlar |

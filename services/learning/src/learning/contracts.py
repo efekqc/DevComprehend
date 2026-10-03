@@ -1,6 +1,7 @@
 """Consume the shared v1 schema, without forking or changing its wire format."""
 
 import json
+from copy import deepcopy
 from pathlib import Path
 
 from jsonschema import Draft202012Validator, FormatChecker
@@ -20,10 +21,15 @@ def validate(value: dict, kind: str) -> None:
 
 
 QUESTION_SCHEMA = SCHEMA["$defs"]["analysis_result"]["properties"]["questions"]["items"]
+MODEL_QUESTION_SCHEMA = deepcopy(QUESTION_SCHEMA)
+MODEL_QUESTION_SCHEMA["required"].append("question_type")
+MODEL_QUESTION_SCHEMA["properties"]["question_type"] = {
+    "type": "string", "enum": ["architecture", "edge_case", "implementation"],
+}
 GENERATION_SCHEMA = {
     "type": "object", "additionalProperties": False, "required": ["questions"],
     "properties": {"questions": {
-        "type": "array", "minItems": 3, "maxItems": 5, "items": QUESTION_SCHEMA,
+        "type": "array", "minItems": 3, "maxItems": 5, "items": MODEL_QUESTION_SCHEMA,
     }},
 }
 EVALUATION_SCHEMA = {

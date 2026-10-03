@@ -10,6 +10,7 @@ from learning.contracts import GENERATION_SCHEMA, load_example, validate
 from learning.engine import Limits
 from learning.providers import ProviderResponse
 from learning.providers.fake import FakeProvider
+from learning.preprocessing import prune_git_diff
 from learning.quality import run as run_quality
 from learning.repetition import plan
 
@@ -20,6 +21,11 @@ class StubProvider:
     identity = "stub/v1"
 
     def __init__(self, value=None, *, raw=None, error=None, input_tokens=50, output_tokens=100):
+        value = deepcopy(value)
+        if isinstance(value, dict) and isinstance(value.get("questions"), list):
+            for index, question in enumerate(value["questions"]):
+                if isinstance(question, dict):
+                    question.setdefault("question_type", ("architecture", "edge_case", "implementation")[min(index, 2)])
         self.raw = raw if raw is not None else json.dumps(value, ensure_ascii=False)
         self.error = error
         self.calls = []
@@ -31,6 +37,21 @@ class StubProvider:
         if self.error:
             raise self.error
         return ProviderResponse(self.raw, self.identity, self.input_tokens, self.output_tokens)
+
+
+class SequenceProvider:
+    identity = "sequence/v1"
+
+    def __init__(self, outputs, *, input_tokens=50, output_tokens=100):
+        self.outputs = deepcopy(outputs)
+        self.calls = []
+        self.input_tokens = input_tokens
+        self.output_tokens = output_tokens
+
+    def complete(self, request):
+        self.calls.append(request)
+        return ProviderResponse(json.dumps(self.outputs.pop(0), ensure_ascii=False), self.identity,
+                                self.input_tokens, self.output_tokens)
 
 
 class LearningTests(unittest.TestCase):
@@ -91,7 +112,7 @@ class LearningTests(unittest.TestCase):
         self.answer["answer"] = "Yetki kontrolü bambaşka bir ifade ile anlatıldı."
         result = LearningEngine(FakeProvider()).evaluate(self.question, self.answer)
         self.assertTrue(result["uncertain"])
-        self.assertIsNone(result["due_at"])
+        self.assertIsNotNone(result["due_at"])
 
     def test_unknown_diff_is_not_silently_replayed(self):
         self.request["diff"] = self.request["diff"].replace("protected_endpoint", "other_endpoint")
@@ -135,6 +156,61 @@ class LearningTests(unittest.TestCase):
                 self.assertEqual(result["error"]["code"], "INVALID_MODEL_OUTPUT")
                 self.assertEqual(result["questions"], [])
 
+    def test_question_type_violation_gets_at_most_one_repair(self):
+        valid_questions = deepcopy(self.ready["questions"])
+        for index, question in enumerate(valid_questions):
+            question["question_type"] = ("architecture", "edge_case", "implementation")[min(index, 2)]
+        invalid = {"questions": deepcopy(valid_questions)}
+        invalid["questions"][0]["question_type"] = "implementation"
+        provider = SequenceProvider([invalid, {"questions": valid_questions}])
+
+        result = LearningEngine(provider, max_repair_attempts=1).generate(self.request)
+
+        self.assertEqual(result["status"], "ready")
+        self.assertEqual(result["questions"], self.ready["questions"])
+        self.assertEqual(len(provider.calls), 2)
+        self.assertIn("previous response failed validation", provider.calls[1].system)
+
+    def test_repair_uses_remaining_shared_token_budget(self):
+        questions = deepcopy(self.ready["questions"])
+        for index, question in enumerate(questions):
+            question["question_type"] = ("architecture", "edge_case", "implementation")[min(index, 2)]
+        invalid = {"questions": deepcopy(questions)}
+        invalid["questions"][0]["question_type"] = "implementation"
+        provider = SequenceProvider([invalid, {"questions": questions}], input_tokens=32_000)
+
+        result = LearningEngine(provider, max_repair_attempts=1).generate(self.request)
+
+        self.assertEqual(result["status"], "failed")
+        self.assertEqual(result["error"]["code"], "TOKEN_BUDGET_EXCEEDED")
+        self.assertEqual(len(provider.calls), 1)
+
+    def test_diff_pruning_filters_whole_files_and_rejects_oversize(self):
+        included = self.request["diff"]
+        ignored = included.replace("src/auth.py", "dist/generated.py")
+        pruned, removed = prune_git_diff(included + ignored)
+        self.assertTrue(removed)
+        self.assertEqual(pruned, included)
+
+        with self.assertRaises(LearningError) as raised:
+            prune_git_diff(included + "\n" + "x" * 16_000)
+        self.assertEqual(raised.exception.code, "PAYLOAD_TOO_LARGE")
+
+        with self.assertRaises(LearningError) as raised:
+            prune_git_diff(included + ("\n+line" * 400))
+        self.assertEqual(raised.exception.code, "PAYLOAD_TOO_LARGE")
+
+    def test_backend_rejects_ignored_context_before_provider(self):
+        request = deepcopy(self.request)
+        request["context"].append({"path": "dist/generated.py", "content": "generated = True\n"})
+        provider = StubProvider({"questions": self.ready["questions"]})
+
+        with self.assertRaises(LearningError) as raised:
+            LearningEngine(provider).generate(request)
+
+        self.assertEqual(raised.exception.code, "INVALID_INPUT")
+        self.assertFalse(provider.calls)
+
     def test_question_evidence_and_semantics_rejected(self):
         mutations = [
             lambda qs: qs[0]["sources"][0].update(snapshot_id="0" * 64),
@@ -175,7 +251,7 @@ class LearningTests(unittest.TestCase):
         result = LearningEngine(provider, on_usage=records.append).generate(self.request)
         self.assertEqual(result["error"]["code"], "TOKEN_BUDGET_EXCEEDED")
         self.assertEqual(records[0]["output_tokens"], 4001)
-        self.assertEqual(records[0]["prompt_version"], "generate.v1")
+        self.assertEqual(records[0]["prompt_version"], "generate.v2")
         self.assertNotIn("diff", records[0])
         self.assertNotIn("answer", records[0])
         self.assertNotIn("metadata", result)

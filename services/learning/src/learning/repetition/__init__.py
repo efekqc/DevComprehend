@@ -2,13 +2,16 @@
 
 from datetime import datetime, timedelta, timezone
 
-POLICY_VERSION = "repetition-1"
+POLICY_VERSION = "repetition-2"
 
 
 def plan(results: list[dict], uncertain: bool, now: datetime) -> tuple[str, str | None]:
     if now.tzinfo is None or now.utcoffset() is None:
         raise ValueError("A timezone-aware clock is required")
-    if uncertain or not results:
+    if uncertain:
+        due = (now.astimezone(timezone.utc) + timedelta(days=1)).isoformat().replace("+00:00", "Z")
+        return "unassessed", due
+    if not results:
         return "unassessed", None
     statuses = {item["result"] for item in results}
     demonstrated = statuses == {"met"}

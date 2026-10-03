@@ -13,6 +13,7 @@ Tarih: 03 Ekim 2026. Durum: Veri toplamadan önce ekip incelemesine hazır öner
 - VSIX kurulumu, yerel Git seçimi, önizleme iptali ve onay sonrası aktarım test edilmiş olmalı.
 - Model adı, prompt/pipeline/politika sürümleri ve maliyet tavanı kayıtlı olmalı.
 - Kaynak/snapshot doğruluğu ve 7 sentetik cevapta rubrik tutarlılığı insan tarafından incelenmeli; fake etiket eşleşmesi canlı kalite kanıtı değildir.
+- En az 30 kesin değerlendirme, model sonucunu görmeyen iki incelemeci tarafından rubrik ölçütü düzeyinde puanlanıp uzlaştırılmalı. Pilot kalite kapısı, modelin uzlaştırılmış insan rubriğiyle ölçüt bazında en az %85 uyumudur; uncertain sonuçlar bu paydaya girmez ve belirsizlik oranı ayrıca raporlanır.
 - Kullanıcı izolasyonu, kalıcılık, silme ve yeniden deneme kontrolleri tamamlanmalı.
 - Aşağıdaki eşikler, veri saklama yaklaşımı ve görüşme formu ekipçe kararlaştırılıp tarih/sürümle dondurulmalı. Sonradan değişirse gerekçesi ayrı raporlanmalı.
 

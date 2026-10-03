@@ -8,7 +8,7 @@ from . import ProviderRequest, ProviderResponse
 
 
 class FakeProvider:
-    identity = "fake/fixture-v1"
+    identity = "fake/fixture-v2"
 
     def __init__(self):
         self.cases = json.loads((MODULE_ROOT / "tests/fixtures/answers.json").read_text(encoding="utf-8"))
@@ -20,6 +20,8 @@ class FakeProvider:
             if supplied["diff"] != fixture["diff"] or supplied["context"] != fixture["context"]:
                 raise LearningError("FAKE_FIXTURE_ONLY", "Fake sağlayıcı yalnız sentetik demo girdisini destekler.")
             value = {"questions": load_example("analysis-ready")["questions"]}
+            for question, kind in zip(value["questions"], ("architecture", "edge_case", "implementation")):
+                question["question_type"] = kind
         elif request.operation == "evaluate":
             question = request.data["question"]
             originals = {q["id"]: q for q in load_example("analysis-ready")["questions"]}

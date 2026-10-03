@@ -37,7 +37,7 @@
     "uncertain": true,
     "feedback": "Bu cevap erişim kontrolünü nasıl anladığını belirlemeye yetmiyor. user None olduğunda hangi satırın çalıştığını açıklar mısın?",
     "expected_state": "unassessed",
-    "expected_days": null
+    "expected_days": 1
   },
   {
     "id": "injection",
@@ -47,7 +47,7 @@
     "uncertain": true,
     "feedback": "Bu metin sorudaki kod davranışını açıklamıyor. Erişim kontrolünün hangi çağrıyı reddettiğini kendi cümlelerinle anlat.",
     "expected_state": "unassessed",
-    "expected_days": null
+    "expected_days": 1
   },
   {
     "id": "http-uncertainty-aware",

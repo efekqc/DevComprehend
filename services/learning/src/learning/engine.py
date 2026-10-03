@@ -1,4 +1,4 @@
-"""Synchronous, stateless API adapter; each invocation performs at most one model call."""
+"""Stateless API adapter with optional one-shot repair under a shared call budget."""
 
 from copy import deepcopy
 from dataclasses import dataclass
@@ -14,11 +14,12 @@ from .contracts import (
 from .errors import LearningError
 from .evaluation import unassessed, validate_rubric
 from .providers import Provider, ProviderRequest, ProviderResponse
-from .questions import validate_question, validate_questions
+from .preprocessing import MAX_DIFF_CHARS, MAX_DIFF_LINES, validate_scope
+from .questions import validate_question, validate_questions, wire_questions
 from .repetition import plan
 
 PIPELINE_VERSION = "pilot-1"
-PROMPT_VERSION = "v1"
+PROMPT_VERSION = "v2"
 
 
 @dataclass(frozen=True)
@@ -28,6 +29,8 @@ class Limits:
     max_response_bytes: int = 48_000
     max_input_tokens: int = 32_000
     max_output_tokens: int = 4_000
+    max_diff_chars: int = MAX_DIFF_CHARS
+    max_diff_lines: int = MAX_DIFF_LINES
 
     def __post_init__(self):
         if any(type(value) is not int or value < 1 for value in vars(self).values()):
@@ -59,8 +62,12 @@ def _reject_constant(value):
 class LearningEngine:
     def __init__(self, provider: Provider, *, limits: Limits | None = None,
                  clock: Callable[[], datetime] | None = None,
-                 on_usage: Callable[[dict], None] | None = None):
+                 on_usage: Callable[[dict], None] | None = None,
+                 max_repair_attempts: int = 0):
+        if type(max_repair_attempts) is not int or max_repair_attempts not in (0, 1):
+            raise ValueError("Only zero or one repair attempt is supported")
         self.provider = provider
+        self.max_repair_attempts = max_repair_attempts
         self.limits = limits or Limits()
         self.clock = clock or (lambda: datetime.now(timezone.utc))
         self.on_usage = on_usage
@@ -77,17 +84,23 @@ class LearningEngine:
         """Backend cache key component; must still be scoped to the authenticated user."""
         data = {"request": request, "provider": self.provider.identity,
                 "pipeline": PIPELINE_VERSION, "prompt": self.prompts["generate"],
-                "limits": vars(self.limits), "schema": GENERATION_SCHEMA}
+                "limits": vars(self.limits), "schema": GENERATION_SCHEMA,
+                "max_repair_attempts": self.max_repair_attempts}
         return hashlib.sha256(encode(data).encode("utf-8")).hexdigest()
 
-    def _complete(self, operation: str, data: dict, schema: dict) -> dict:
+    def _complete(self, operation: str, data: dict, schema: dict, budget: dict, attempt: int) -> dict:
         system = self.prompts[operation]
+        if attempt:
+            system += ("\nThe previous response failed validation. Regenerate from the ORIGINAL data. "
+                       "Check the schema, question-type order, all evidence ranges and exact rubric coverage. "
+                       "Do not add markdown, fields or unsupported facts.")
         # Conservative UTF-8 byte estimate plus envelope allowance. Exact usage
         # comes from the adapter; this is not account quota or billing enforcement.
         upper_estimate = len(encode({"system": system, "data": data, "schema": schema}).encode("utf-8")) + 1024
-        if upper_estimate > self.limits.max_input_tokens:
+        if upper_estimate > budget["input"] or budget["output"] < 1:
             raise LearningError("TOKEN_BUDGET_EXCEEDED", "Girdi token bütçesine sığmıyor.")
-        request = ProviderRequest(operation, system, deepcopy(data), deepcopy(schema), self.limits.max_output_tokens)
+        budget["usage_known"] = False
+        request = ProviderRequest(operation, system, deepcopy(data), deepcopy(schema), budget["output"])
         try:
             response = self.provider.complete(request)
         except LearningError:
@@ -100,15 +113,18 @@ class LearningEngine:
                 or any(type(value) is not int or value < 0
                        for value in (response.input_tokens, response.output_tokens))):
             raise LearningError("INVALID_MODEL_OUTPUT", "Model kullanım bilgisi geçersiz.", True)
+        budget["usage_known"] = True
+        budget["input"] -= response.input_tokens
+        budget["output"] -= response.output_tokens
         # Backend can persist this metadata separately: v1 has no metadata field.
         if self.on_usage:
             self.on_usage({"operation": operation, "pipeline_version": PIPELINE_VERSION,
                            "prompt_version": f"{operation}.{PROMPT_VERSION}",
                            "prompt_sha256": hashlib.sha256(system.encode()).hexdigest(),
                            "model_version": response.model_version,
+                           "attempt": attempt + 1,
                            "input_tokens": response.input_tokens, "output_tokens": response.output_tokens})
-        if (response.input_tokens > self.limits.max_input_tokens
-                or response.output_tokens > self.limits.max_output_tokens):
+        if budget["input"] < 0 or budget["output"] < 0:
             raise LearningError("TOKEN_BUDGET_EXCEEDED", "Model token bütçesini aştı.")
         try:
             response_bytes = len(response.text.encode("utf-8"))
@@ -127,11 +143,26 @@ class LearningEngine:
         validate_provider(value, schema)
         return value
 
+    def _validated(self, operation: str, data: dict, schema: dict, semantic_check: Callable) -> dict:
+        budget = {"input": self.limits.max_input_tokens, "output": self.limits.max_output_tokens,
+                  "usage_known": False}
+        for attempt in range(self.max_repair_attempts + 1):
+            try:
+                output = self._complete(operation, data, schema, budget, attempt)
+                semantic_check(output)
+                return output
+            except LearningError as error:
+                if (attempt == self.max_repair_attempts or error.code != "INVALID_MODEL_OUTPUT"
+                        or not budget["usage_known"]):
+                    raise
+        raise AssertionError("Unreachable repair state")
+
     def generate(self, request: dict, *, analysis_id: str | None = None) -> dict:
         self._check_size(request, self.limits.max_request_bytes)
         validate(request, "analysis_request")
         if request["pipeline_version"] != PIPELINE_VERSION:
             raise LearningError("INVALID_INPUT", "Desteklenmeyen pipeline sürümü.")
+        validate_scope(request, max_chars=self.limits.max_diff_chars, max_lines=self.limits.max_diff_lines)
         evidence = evidence_index(request)
         if analysis_id is not None and (not isinstance(analysis_id, str) or not analysis_id.strip()):
             raise LearningError("INVALID_INPUT", "Analiz kimliği boş olamaz.")
@@ -139,9 +170,12 @@ class LearningEngine:
                   "id": analysis_id or f"analysis-{self.fingerprint(request)}",
                   "status": "ready", "questions": [], "error": None}
         try:
-            output = self._complete("generate", {"analysis_request": request, "evidence_lines": evidence}, GENERATION_SCHEMA)
-            validate_questions(output["questions"], request["snapshot_id"], evidence)
-            result["questions"] = output["questions"]
+            def check(output):
+                validate_questions(wire_questions(output["questions"]), request["snapshot_id"], evidence)
+
+            output = self._validated("generate", {"analysis_request": request, "evidence_lines": evidence},
+                                     GENERATION_SCHEMA, check)
+            result["questions"] = wire_questions(output["questions"])
         except LearningError as error:
             result.update(status="failed", error=error.as_dict())
         validate(result, "analysis_result")
@@ -157,13 +191,14 @@ class LearningEngine:
         if not answer["answer"].strip():
             return unassessed(question["id"], "Henüz değerlendirilebilir bir cevap verilmedi.", False)
         try:
-            output = self._complete("evaluate", {"question": question, "answer": answer["answer"]}, EVALUATION_SCHEMA)
-            validate_rubric(question, output)
+            output = self._validated("evaluate", {"question": question, "answer": answer["answer"]},
+                                     EVALUATION_SCHEMA, lambda value: validate_rubric(question, value))
         except LearningError:
             return unassessed(question["id"], "Cevap güvenilir biçimde değerlendirilemedi. Daha sonra yeniden deneyin.")
         if output["uncertain"]:
             # Suppress even apparently positive rubric labels when confidence is absent.
             result = unassessed(question["id"], "Belirsiz değerlendirme: " + output["feedback"])
+            _, result["due_at"] = plan([], True, self.clock())
         else:
             state, due_at = plan(output["rubric_results"], False, self.clock())
             result = {"kind": "evaluation_result", "contract_version": "1", "question_id": question["id"],
