@@ -1,0 +1,31 @@
+{
+  "version": "v1.0.0",
+  "event_type": "error.response",
+  "timestamp": "2026-10-03T05:00:00Z",
+  "payload": {
+    "error_code": "EMPTY_DIFF",
+    "http_status": 400,
+    "message": "Gönderilen diff herhangi bir değişiklik veya dosya içermiyor.",
+    "details": {
+      "reason": "empty_changeset",
+      "supported_scenarios": {
+        "EMPTY_DIFF": {
+          "http_status": 400,
+          "description": "Boş diff veya unstaged/staged alanında değişiklik bulunmaması."
+        },
+        "PAYLOAD_TOO_LARGE": {
+          "http_status": 413,
+          "description": "Diff boyutu >400 satır veya paket kilitleme dosyası (package-lock.json vb.) içeriyor."
+        },
+        "STALE_SNAPSHOT": {
+          "http_status": 409,
+          "description": "İstemcinin snapshot_id değeri ile güncel dosya karması uyuşmuyor."
+        },
+        "RATE_LIMIT_EXCEEDED": {
+          "http_status": 429,
+          "description": "Günlük analiz (10) veya token (50.000) kotası aşıldı."
+        }
+      }
+    }
+  }
+}

@@ -16,7 +16,8 @@
         "analysis.queued",
         "analysis.ready",
         "answer.request",
-        "evaluation.result"
+        "evaluation.result",
+        "error.response"
       ]
     },
     "timestamp": {
@@ -392,6 +393,101 @@
           "format": "date-time"
         }
       }
+    },
+    "error_response": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "error_code",
+        "http_status",
+        "message"
+      ],
+      "properties": {
+        "error_code": {
+          "type": "string",
+          "enum": [
+            "EMPTY_DIFF",
+            "PAYLOAD_TOO_LARGE",
+            "STALE_SNAPSHOT",
+            "RATE_LIMIT_EXCEEDED",
+            "INVALID_MODEL_OUTPUT"
+          ]
+        },
+        "http_status": {
+          "type": "integer",
+          "enum": [
+            400,
+            409,
+            413,
+            429,
+            502
+          ]
+        },
+        "message": {
+          "type": "string",
+          "minLength": 1
+        },
+        "details": {
+          "type": "object"
+        }
+      }
+    },
+    "analysis_queued_payload": {
+      "type": "object",
+      "required": [
+        "analysis_id",
+        "status"
+      ],
+      "properties": {
+        "analysis_id": {
+          "type": "string"
+        },
+        "snapshot_id": {
+          "type": "string"
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "QUEUED",
+            "READY",
+            "PROCESSING"
+          ]
+        },
+        "http_status": {
+          "type": "integer",
+          "enum": [
+            200,
+            202
+          ]
+        },
+        "estimated_seconds": {
+          "type": "integer"
+        },
+        "retry_after_ms": {
+          "type": "integer"
+        },
+        "queue_position": {
+          "type": "integer"
+        }
+      }
     }
-  }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "event_type": {
+            "const": "error.response"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "payload": {
+            "$ref": "#/$defs/error_response"
+          }
+        }
+      }
+    }
+  ]
 }

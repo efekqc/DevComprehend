@@ -331,3 +331,132 @@ class TestSchemaEnvelopeValidation:
             "payload": {},
         }
         assert not validator.is_valid(msg)
+
+
+# ═══════════════════════════════════════════════════════════════════
+# ERROR PROTOCOL & EXTENSION-API (AHMET-DERVİŞ) FLOW HELPERS
+# ═══════════════════════════════════════════════════════════════════
+def build_contract_error(error_code: str, http_status: int, message: str, details: dict = None) -> dict:
+    """Simulate API (Derviş) returning a standardized error envelope."""
+    payload = {
+        "error_code": error_code,
+        "http_status": http_status,
+        "message": message,
+    }
+    if details:
+        payload["details"] = details
+    return _make_message("error.response", payload)
+
+
+def extension_parse_api_response(response_envelope: dict) -> dict:
+    """Simulate Extension (Ahmet) client parsing an API response.
+    
+    Handles:
+    - 202 Accepted: starts background polling with retry_after_ms
+    - 200 OK: immediately transitions to ready/render state
+    - error.response: maps error_code to user-facing UI notification
+    """
+    event_type = response_envelope.get("event_type")
+    payload = response_envelope.get("payload", {})
+
+    if event_type == "error.response":
+        code = payload.get("error_code")
+        status = payload.get("http_status")
+        msg = payload.get("message")
+        return {
+            "ui_action": "SHOW_ERROR_BANNER",
+            "severity": "error" if status and status >= 500 else "warning",
+            "user_message": msg,
+            "error_code": code,
+            "retryable": code in ("INVALID_MODEL_OUTPUT", "RATE_LIMIT_EXCEEDED"),
+        }
+
+    if event_type == "analysis.queued":
+        status_code = payload.get("http_status", 202 if payload.get("status") == "QUEUED" else 200)
+        if status_code == 200 or payload.get("status") == "READY":
+            return {
+                "ui_action": "RENDER_QUESTIONS_IMMEDIATELY",
+                "analysis_id": payload.get("analysis_id"),
+                "is_polling": False,
+            }
+        return {
+            "ui_action": "START_POLLING",
+            "analysis_id": payload.get("analysis_id"),
+            "is_polling": True,
+            "poll_interval_ms": payload.get("retry_after_ms", 3000),
+        }
+
+    return {"ui_action": "UNKNOWN", "raw": response_envelope}
+
+
+class TestExtensionApiErrorAndStatusHandling:
+    """Verify Derviş (API) and Ahmet (Extension) contract compatibility."""
+
+    def test_empty_diff_error_flow(self, validator):
+        err = build_contract_error("EMPTY_DIFF", 400, "Gönderilen diff boş.")
+        assert validator.is_valid(err)
+        client_state = extension_parse_api_response(err)
+        assert client_state["ui_action"] == "SHOW_ERROR_BANNER"
+        assert client_state["error_code"] == "EMPTY_DIFF"
+        assert client_state["retryable"] is False
+
+    def test_oversized_diff_error_flow(self, validator):
+        err = build_contract_error(
+            "PAYLOAD_TOO_LARGE", 413,
+            "Diff 400 satırı aşıyor.",
+            details={"max_lines": 400, "actual_lines": 650}
+        )
+        assert validator.is_valid(err)
+        client_state = extension_parse_api_response(err)
+        assert client_state["ui_action"] == "SHOW_ERROR_BANNER"
+        assert client_state["error_code"] == "PAYLOAD_TOO_LARGE"
+
+    def test_stale_snapshot_error_flow(self, validator):
+        err = build_contract_error("STALE_SNAPSHOT", 409, "Snapshot uyuşmuyor.")
+        assert validator.is_valid(err)
+        client_state = extension_parse_api_response(err)
+        assert client_state["ui_action"] == "SHOW_ERROR_BANNER"
+        assert client_state["error_code"] == "STALE_SNAPSHOT"
+
+    def test_rate_limit_error_flow(self, validator):
+        err = build_contract_error("RATE_LIMIT_EXCEEDED", 429, "Kota aşıldı.")
+        assert validator.is_valid(err)
+        client_state = extension_parse_api_response(err)
+        assert client_state["ui_action"] == "SHOW_ERROR_BANNER"
+        assert client_state["error_code"] == "RATE_LIMIT_EXCEEDED"
+        assert client_state["retryable"] is True
+
+    def test_invalid_model_output_error_flow(self, validator):
+        err = build_contract_error("INVALID_MODEL_OUTPUT", 502, "Model geçersiz yanıt üretti.")
+        assert validator.is_valid(err)
+        client_state = extension_parse_api_response(err)
+        assert client_state["ui_action"] == "SHOW_ERROR_BANNER"
+        assert client_state["severity"] == "error"
+        assert client_state["retryable"] is True
+
+    def test_extension_handles_202_queued_async_flow(self, validator):
+        """Standard async flow: API returns 202 Accepted, extension polls."""
+        resp = _make_message("analysis.queued", {
+            "analysis_id": "an-async-999",
+            "status": "QUEUED",
+            "http_status": 202,
+            "retry_after_ms": 2500,
+        })
+        assert validator.is_valid(resp)
+        action = extension_parse_api_response(resp)
+        assert action["ui_action"] == "START_POLLING"
+        assert action["is_polling"] is True
+        assert action["poll_interval_ms"] == 2500
+
+    def test_extension_handles_200_sync_ready_flow(self, validator):
+        """Synchronous/mock flow: API returns 200 OK, extension renders immediately."""
+        resp = _make_message("analysis.queued", {
+            "analysis_id": "an-sync-111",
+            "status": "READY",
+            "http_status": 200,
+        })
+        assert validator.is_valid(resp)
+        action = extension_parse_api_response(resp)
+        assert action["ui_action"] == "RENDER_QUESTIONS_IMMEDIATELY"
+        assert action["is_polling"] is False
+

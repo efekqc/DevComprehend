@@ -23,6 +23,7 @@ FIXTURE_FILES = [
     "analysis-ready.json",
     "answer-request.json",
     "evaluation-result.json",
+    "error-response.json",
 ]
 
 
@@ -92,9 +93,104 @@ class TestFixtureValidation:
             data = json.load(f)
         valid_types = {
             "analysis.request", "analysis.queued", "analysis.ready",
-            "answer.request", "evaluation.result"
+            "answer.request", "evaluation.result", "error.response"
         }
         assert data["event_type"] in valid_types
+
+
+class TestErrorResponseSchema:
+    """Verify error.response schema and status code handling."""
+
+    def test_valid_error_payload(self, validator):
+        msg = {
+            "version": "v1.0.0",
+            "event_type": "error.response",
+            "timestamp": "2026-10-03T05:00:00Z",
+            "payload": {
+                "error_code": "EMPTY_DIFF",
+                "http_status": 400,
+                "message": "Empty diff provided",
+            }
+        }
+        assert validator.is_valid(msg)
+
+    @pytest.mark.parametrize("code,status", [
+        ("EMPTY_DIFF", 400),
+        ("PAYLOAD_TOO_LARGE", 413),
+        ("STALE_SNAPSHOT", 409),
+        ("RATE_LIMIT_EXCEEDED", 429),
+        ("INVALID_MODEL_OUTPUT", 502),
+    ])
+    def test_all_standard_error_codes(self, validator, code, status):
+        msg = {
+            "version": "v1.0.0",
+            "event_type": "error.response",
+            "timestamp": "2026-10-03T05:00:00Z",
+            "payload": {
+                "error_code": code,
+                "http_status": status,
+                "message": f"Test error for {code}",
+                "details": {"code": code}
+            }
+        }
+        assert validator.is_valid(msg)
+
+    def test_rejects_invalid_error_code(self, validator):
+        msg = {
+            "version": "v1.0.0",
+            "event_type": "error.response",
+            "timestamp": "2026-10-03T05:00:00Z",
+            "payload": {
+                "error_code": "UNKNOWN_CODE",
+                "http_status": 400,
+                "message": "Bad error code",
+            }
+        }
+        assert not validator.is_valid(msg)
+
+    def test_rejects_invalid_http_status(self, validator):
+        msg = {
+            "version": "v1.0.0",
+            "event_type": "error.response",
+            "timestamp": "2026-10-03T05:00:00Z",
+            "payload": {
+                "error_code": "EMPTY_DIFF",
+                "http_status": 200,  # 200 is not a valid error http_status
+                "message": "Bad status code",
+            }
+        }
+        assert not validator.is_valid(msg)
+
+
+class TestStatusCodes200And202:
+    """Verify both 200 OK and 202 Accepted flows are supported."""
+
+    def test_analysis_queued_202_accepted(self, validator):
+        msg = {
+            "version": "v1.0.0",
+            "event_type": "analysis.queued",
+            "timestamp": "2026-10-03T00:30:00Z",
+            "payload": {
+                "analysis_id": "an-123",
+                "status": "QUEUED",
+                "http_status": 202,
+                "retry_after_ms": 3000,
+            }
+        }
+        assert validator.is_valid(msg)
+
+    def test_analysis_queued_200_sync_ready(self, validator):
+        msg = {
+            "version": "v1.0.0",
+            "event_type": "analysis.queued",
+            "timestamp": "2026-10-03T00:30:00Z",
+            "payload": {
+                "analysis_id": "an-123",
+                "status": "READY",
+                "http_status": 200,
+            }
+        }
+        assert validator.is_valid(msg)
 
 
 class TestNegativeValidation:

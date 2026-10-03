@@ -6,6 +6,7 @@
     "analysis_id": "an-789xyz",
     "snapshot_id": "snap-a1b2c3d4",
     "status": "QUEUED",
+    "http_status": 202,
     "estimated_seconds": 15,
     "retry_after_ms": 3000,
     "queue_position": 2
